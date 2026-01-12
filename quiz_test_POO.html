@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Quiz Test POO</title>
+<style>
+  :root{--bg:#f3f4f6; --card:#ffffff; --accent:#0ea5a4; --green:#16a34a; --red:#dc2626;}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;background:var(--bg);display:flex;align-items:center;justify-content:center;height:100vh;}
+  .card{width:min(900px,95vw);background:var(--card);border-radius:16px;box-shadow:0 8px 24px rgba(15,23,42,0.12);padding:24px;}
+  h1{ margin:0 0 12px 0;font-size:20px; }
+  .question{font-size:18px;margin:16px 0;min-height:48px}
+  .options{display:flex;flex-direction:column;gap:8px}
+  .option{padding:10px 12px;border-radius:10px;border:1px solid #e6e6e6;cursor:pointer;display:flex;align-items:center;justify-content:space-between;}
+  .option.disabled{opacity:0.6;cursor:default}
+  .option.correct{background:rgba(22,163,74,0.12);border-color:rgba(22,163,74,0.3)}
+  .option.wrong{background:rgba(220,38,38,0.06);border-color:rgba(220,38,38,0.2)}
+  .controls{display:flex;gap:12px;margin-top:16px;align-items:center}
+  button{padding:10px 14px;border-radius:10px;border:none;background:var(--accent);color:white;cursor:pointer;font-weight:600}
+  button.secondary{background:#e6e6e6;color:#111}
+  .feedback{margin-left:8px;font-weight:700}
+  .status{margin-left:auto;color:#374151;font-size:14px}
+  .visual{height:6px;background:linear-gradient(90deg,var(--accent),#7c3aed);border-radius:999px;margin-top:12px;}
+  .badge{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:#111;color:#fff;font-weight:700}
+  .small{font-size:13px;color:#6b7280}
+</style>
+</head>
+<body>
+<div class="card">
+  <div style="display:flex;gap:12px;align-items:center">
+    <h1>Quiz Test POO</h1>
+    <div class="small">Questions: 25</div>
+    <div style="margin-left:auto" id="progressText" class="small">Answer to start</div>
+  </div>
+  <div class="visual" id="visualBar"></div>
+  <div id="quizArea">
+    <div id="qnum" class="small" style="margin-top:10px"></div>
+    <div id="question" class="question"></div>
+    <div id="options" class="options"></div>
+    <div class="controls">
+      <button id="submitBtn">Submit</button>
+      <button id="nextBtn" class="secondary" style="display:none">Next</button>
+      <div id="feedback" class="feedback"></div>
+      <div class="status" id="score">Score: 0</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const quiz = [
+  {
+    qnum: "1",
+    question: "Dacă o clasă C++ are un membru dată declarat ca private, acesta poate fi accesat direct:",
+    options: [
+      "A. Din orice altă clasă",
+      "B. Doar din funcțiile membre ale aceleiași clase",
+      "C. Din funcțiile membre ale aceleiași clase și din clasele derivate",
+      "D. Din funcțiile friend ale clasei și din funcțiile membre ale clasei",
+      "E. Doar din funcțiile globale definite în același fișier"
+    ],
+    correct: "D. Din funcțiile friend ale clasei și din funcțiile membre ale clasei"
+  },
+  {
+    qnum: "2",
+    question: "Care dintre următoarele nu este un modificator de acces în C++? ",
+    options: [
+      "A. public",
+      "B. private",
+      "C. protected",
+      "D. internal",
+      "E. Toate sunt modificatori de acces în C++"
+    ],
+    correct: "D. internal"
+  },
+  {
+  qnum: "3",
+  question: [
+    "Marcaţi afirmaţiile adevărate considerând liniile de cod: ",
+    "int x=10; ",
+    "int * p=&x; "
+  ],
+  options: [
+    "A. p și x sunt pointeri;",
+    "B.  & este operatorul adresă și se poate citi «adresa lui»",
+    "C. După execuția celor două instrucțiuni de mai sus va fi adevărată și următoarea expresie:  *p==x;"
+  ],
+  correct: [
+    "B.  & este operatorul adresă și se poate citi «adresa lui»",
+    "C. După execuția celor două instrucțiuni de mai sus va fi adevărată și următoarea expresie:  *p==x;",
+  ]
+  },
+  {
+    qnum: "4",
+    question: "Ce înțelegem prin «încapsulare» în POO? ",
+    options: [
+      "A. Ascunderea detaliilor de implementare și expunerea doar a unei interfețe publice.",
+      "B. Capacitatea unei clase de a moșteni de la mai multe clase de bază",
+      "C. Crearea de mai multe metode cu același nume dar parametri diferiți.",
+      "D. Permite tratarea obiectelor de tipuri diferite în mod uniform.",
+    ],
+    correct: "A. Ascunderea detaliilor de implementare și expunerea doar a unei interfețe publice."
+  },
+  {
+    qnum: "5",
+    question: "Marcaţi afirmaţiile adevărate cu privire la variabile:",
+    options: [
+      "A. Variabilele nu pot fi folosite fără a fi mai întâi declarate de ce tip sunt",
+      "B. Pot fi declarate, cu virgulă între ele, mai multe variabile de acelaşi tip; de exemplu long A,B,C; declară trei variabile (A, B și C) toate de tip long.",
+      "C. Nu se pot declara variabile formate din două cuvinte (cu spaţiu între ele)",
+    ],
+    correct: [
+      "A. Variabilele nu pot fi folosite fără a fi mai întâi declarate de ce tip sunt",
+      "B. Pot fi declarate, cu virgulă între ele, mai multe variabile de acelaşi tip; de exemplu long A,B,C; declară trei variabile (A, B și C) toate de tip long.",
+      "C. Nu se pot declara variabile formate din două cuvinte (cu spaţiu între ele)"
+    ]
+  },
+  {
+  qnum: "6",
+  question: "Marcaţi afirmaţiile adevărate din cele de mai jos:",
+  options: [
+    "A. Liniile   #include <nume> sunt directive preprocesor  ce “spun” compilatorului să caute fişierul <nume>şi să-l insereze în cadrul fişierului sursă.",
+    "B. Biblioteca iostream utilizează simbolul <<  pentru ieşiri, adică informaţii care rezultă din program, şi  >>   pentru intrări, adică informaţii furnizate programului.",
+    "C. Liniile care încep cu două caractere slash // sunt antete de funcţii."
+  ],
+  correct: [
+    "A. Liniile   #include <nume> sunt directive preprocesor  ce “spun” compilatorului să caute fişierul <nume>şi să-l insereze în cadrul fişierului sursă.",
+    "B. Biblioteca iostream utilizează simbolul <<  pentru ieşiri, adică informaţii care rezultă din program, şi  >>   pentru intrări, adică informaţii furnizate programului."
+  ]
+  },
+  {
+  qnum: "7",
+  question: "Marcaţi afirmaţiile adevărate cu privire funcțiile C++:",
+  options: [
+    "A. Fiecare program C++ are cel puțin o funcție (funcția main)",
+    "B. Fișierele cu extensia .h conțin implementări ale unor funcții",
+    "C. funcţia cu tip, prin apelul ei, returnează o valoare, dată după cuvântul return",
+    "D. Numele unei funcții poate fi supraîncărcat (overloaded)",
+    "E. Toți parametrii unei funcții sunt pasați prin valoare, dacă nu se specifică altfel (referință/pointer)."
+  ],
+  correct: [
+    "A. Fiecare program C++ are cel puțin o funcție (funcția main)",
+    "C. funcţia cu tip, prin apelul ei, returnează o valoare, dată după cuvântul return",
+    "D. Numele unei funcții poate fi supraîncărcat (overloaded)",
+    "E. Toți parametrii unei funcții sunt pasați prin valoare, dacă nu se specifică altfel (referință/pointer)."
+  ]
+  },
+  {
+  qnum: "8",
+  question: [
+    "Dacă funcția cu numele f este o funcție void având doi parametri de tip int, apelul ei in codul de mai jos :",
+    "int a=2, b=0;",
+    'cout <<"f="<<f(a,b)<<endl; '
+  ],
+  options: [
+    "A.este corect",
+    "B.este gresit"
+  ],
+  correct: "B.este gresit"
+  },
+  {
+  qnum: "9",
+  question: 'Dacă avem o declarație: int m=7. Ce vom obține prin codul: cout << "m is " << m/3 << endl;',
+  options: [
+    "A. 2",
+    "B. 2.33"
+  ],
+  correct: [
+    "A. 2"
+  ]
+  },
+  {
+  qnum: "10",
+  question: [
+    "O funcție g cu tipul double fără parametri e corect a fi apelată într-o instrucțiune de atribuire de forma:",
+    "double x=g();"
+  ],
+  options: [
+    "A.	Adevărat",
+    "B. Fals"
+  ],
+  correct: "A.	Adevărat"
+  },
+  {
+    qnum: "11",
+    question: "Care este rolul principal al fișierelor header (cu extensia .h sau .hpp) în C++?",
+    options: [
+      "A.	Conțin doar definiții complete ale funcțiilor și sunt compilate separat în fișiere obiect.",
+      "B.	Sunt folosite exclusiv pentru a stoca implementări de clase și nu pot fi incluse în mai multe fișiere sursă.",
+      "C.	Conțin declarații de funcții, clase și variabile care pot fi reutilizate în mai multe fișiere sursă prin directiva #include.",
+      "D.	Sunt generate automat de compilator și nu trebuie modificate de programator.",
+    ],
+    correct: "C.	Conțin declarații de funcții, clase și variabile care pot fi reutilizate în mai multe fișiere sursă prin directiva #include."
+  },
+  {
+    qnum: "12",
+    question: "Expresia ( (7==7) || (5>=9)) va returna",
+    options: [
+      "A.	True",
+      "B. False"
+    ],
+    correct: "A.	True"
+  },
+  {
+  qnum: "13",
+  question: [
+    "Dacă avem codul: float m = 7, n=2;",
+    "Ce vom obține prin codul :",
+    'cout << "m/n is " << m/n << endl;'
+  ],
+  options: [
+    "A.	3.5",
+    "B. 3"
+  ],
+  correct: "A.	3.5"
+  },
+  {
+    qnum: "14",
+    question: "O variabilă declarată într-un bloc doar prin tipul ei își pierde valoarea la închiderea respectivului bloc :",
+    options: [
+      "A.	Adevărat",
+      "B. Fals"
+    ],
+    correct: "A.	Adevărat"
+  },
+  {
+  qnum: "15",
+  question: "Marcați afirmațiile adevărate cu privire la constructori:",
+  options: [
+    "A.	Dacă nu se declară niciun constructor în definiția clasei, compilatorul presupune că există un constructor implicit al clasei fără niciun argument",
+    "B.	Dacă însă ați declarat propriul constructor pentru o clasă, compilatorul nu va mai furniza un constructor implicit",
+    "C.	Constructorul poate fi supraincarcat cu mai multe funcții având toate același nume ca și clasa și număr sau tipuri diferite de parametri"
+  ],
+  correct: [
+    "A.	Dacă nu se declară niciun constructor în definiția clasei, compilatorul presupune că există un constructor implicit al clasei fără niciun argument",
+    "B.	Dacă însă ați declarat propriul constructor pentru o clasă, compilatorul nu va mai furniza un constructor implicit",
+    "C.	Constructorul poate fi supraincarcat cu mai multe funcții având toate același nume ca și clasa și număr sau tipuri diferite de parametri"
+  ]
+  },
+  {
+    qnum: "16",
+    question: "Expresia p->a conținând operatorul săgeată (->) pentru indirectare poate fi citită ca membrul a al obiectului către care indică pointerul p:",
+    options: [
+      "A.	Adevărat",
+      "B.Fals"
+    ],
+    correct: "A.	Adevărat"
+  },
+  {
+    qnum: "18",
+    question: '* este operatorul adresă și se poate citi ca "adresa lui"',
+    options: [
+      "A.	Adevărat",
+      "B.Fals"
+    ],
+    correct: "B.Fals"
+  },
+  {
+    qnum: "19",
+    question: '& este operatorul de redirectare și poate fi citit ca "valoarea spre care indică"',
+    options: [
+      "A.	Adevărat",
+      "B.Fals"
+    ],
+    correct: "B.Fals"
+  },
+  {
+    qnum: "20",
+    question: "Ce face următoarea declarație: int* arr = new int[50];?",
+    options: [
+      "A.	Declară un array static",
+      "B.	Alocă dinamic memorie pentru un array",
+      "C.	Șterge un array existent",
+      "D.	Copiază un array",
+    ],
+    correct: "B.	Alocă dinamic memorie pentru un array"
+  },
+  {
+  qnum: "21",
+  question: [
+    "Bifați afirmațiile adevărate cu privire la linia de cod:",
+    "int a[10];"
+  ],
+  options: [
+    "A.	s-a definit un array cu 9 elemente de tipul int;",
+    "B.	ultimul element din array este a[9];",
+    "C.	primul element din array este &a;",
+    "D.	primul element din array este *a ;"
+  ],
+  correct: [
+    "B.	ultimul element din array este a[9];",
+    "D.	primul element din array este *a ;"
+  ]
+  },
+  {
+  qnum: "22",
+  question: [
+    "Presupunem următoarele două linii de cod; bifați afirmațiile adevărate :",
+    "int a[10];",
+    "int *p;"
+  ],
+  options: [
+    "A.	După execuția celor două linii de cod următoarea operație de asignare va fi corectă: p=a;",
+    "B.	p este un pointer și a este un array;",
+    "C.	După execuția celor două linii de cod următoarea operație de asignare va fi corectă: a=p;"
+  ],
+  correct: [
+    "A.	După execuția celor două linii de cod următoarea operație de asignare va fi corectă: p=a;",
+    "B.	p este un pointer și a este un array;"
+  ]
+  },
+  {
+    qnum: "23",
+    question: "În C++, care este diferența principală între transmiterea parametrilor prin valoare și prin referință?",
+    options: [
+      "A.	Transmiterea prin valoare permite modificarea variabilei originale în funcție, în timp ce transmiterea prin referință nu.",
+      "B. Transmiterea prin valoare creează o copie a valorii, iar modificările în funcție nu afectează variabila originală; transmiterea prin referință permite modificarea directă a variabilei originale.",
+      "C.	Transmiterea prin referință este mai lentă decât transmiterea prin valoare, deoarece creează copii suplimentare.",
+      "D.	Transmiterea prin valoare folosește operatorul &, în timp ce transmiterea prin referință nu necesită acest operator.",
+    ],
+    correct: "B. Transmiterea prin valoare creează o copie a valorii, iar modificările în funcție nu afectează variabila originală; transmiterea prin referință permite modificarea directă a variabilei originale."
+  },
+  {
+    qnum: "24",
+    question: "Care dintre următoarele afirmații descrie corect rolul preprocesorului în C++?",
+    options: [
+      "A.	El compilează codul sursă în cod mașină și gestionează bibliotecile legate.",
+      "B.	Este o componentă a compilatorului care procesează codul sursă înainte de compilarea propriu-zisă, executând directive precum #define și #ifdef.",
+      "C.	Rulează după compilare pentru a optimiza codul obiect generat.",
+      "D.	Înlocuiește compilatorul în proiectele mici, permițând executarea directă a codului sursă.",
+    ],
+    correct: "B.	Este o componentă a compilatorului care procesează codul sursă înainte de compilarea propriu-zisă, executând directive precum #define și #ifdef."
+  },
+  {
+    qnum: "25",
+    question: "Care sunt tipurile de date primitive (predefinite) în C++?",
+    options: [
+      "A.	Sunt tipuri definite de utilizator, cum ar fi structuri și clase.",
+      "B.	Sunt tipuri de date care nu pot fi folosite direct pentru a declara variabile.",
+      "C.	Sunt tipuri de date încorporate în limbaj, care pot fi folosite direct pentru a declara variabile ex: int, float, char, bool).",
+      "D.	Sunt disponibile doar după includerea bibliotecii <iostream>.",
+    ],
+    correct: "C.	Sunt tipuri de date încorporate în limbaj, care pot fi folosite direct pentru a declara variabile ex: int, float, char, bool)."
+  },
+];
+
+let shuffledQuiz = shuffleArray([...quiz]);
+let currentIndex = 0;
+let score = 0;
+let current = null;
+let selectedEls = new Set();
+
+const accent = getComputedStyle(document.documentElement)
+  .getPropertyValue('--accent').trim();
+
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function pickQuestion() {
+  if (currentIndex >= shuffledQuiz.length) {
+    document.getElementById('quizArea').innerHTML =
+      `<h2>Quiz Finished!</h2><p>Your score: ${score} / ${shuffledQuiz.length}</p>`;
+    document.getElementById('visualBar').style.width = '100%';
+    document.getElementById('progressText').textContent = `Completed!`;
+    return;
+  }
+  current = shuffledQuiz[currentIndex];
+  renderQuestion();
+}
+
+function renderQuestion() {
+  document.getElementById('qnum').textContent = `Q${current.qnum}`;
+
+  const qDiv = document.getElementById('question');
+  qDiv.innerHTML = Array.isArray(current.question)
+    ? current.question.map(l => `<div>${l}</div>`).join('')
+    : current.question;
+
+  const optionsDiv = document.getElementById('options');
+  optionsDiv.innerHTML = '';
+  selectedEls.clear();
+
+current.options.forEach(opt => {
+    const el = document.createElement('div');
+    el.className = 'option';
+    
+    // -- MODIFICARE START --
+    // Creăm span-ul de text separat pentru a evita interpretarea HTML
+    const textSpan = document.createElement('span');
+    textSpan.textContent = opt; // Aici e cheia: textContent nu interpretează tag-urile
+    
+    const markerSpan = document.createElement('span');
+    markerSpan.className = 'marker';
+    
+    el.appendChild(textSpan);
+    el.appendChild(markerSpan);
+    // -- MODIFICARE FINAL --
+
+    el.addEventListener('click', () => selectOption(el));
+    optionsDiv.appendChild(el);
+  });
+
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('nextBtn').style.display = 'none';
+  updateProgressVisual();
+}
+
+function selectOption(el) {
+  if (el.classList.contains('disabled')) return;
+
+  if (selectedEls.has(el)) {
+    selectedEls.delete(el);
+    el.style.boxShadow = 'none';
+  } else {
+    selectedEls.add(el);
+    el.style.boxShadow = `inset 0 0 0 2px ${accent}`;
+  }
+}
+
+document.getElementById('submitBtn').addEventListener('click', () => {
+  if (selectedEls.size === 0) {
+    alert('Please select an option');
+    return;
+  }
+
+  const selectedTexts = [...selectedEls].map(el => el.textContent.trim());
+  const correctAnswers = Array.isArray(current.correct)
+    ? current.correct
+    : [current.correct];
+
+  document.querySelectorAll('.option').forEach(o => o.classList.add('disabled'));
+
+  const isCorrect =
+    selectedTexts.length === correctAnswers.length &&
+    selectedTexts.every(a => correctAnswers.includes(a));
+
+  if (isCorrect) {
+    selectedEls.forEach(el => el.classList.add('correct'));
+    document.getElementById('feedback').textContent = 'Correct ✓';
+    document.getElementById('feedback').style.color = 'var(--green)';
+    score++;
+  } else {
+    selectedEls.forEach(el => el.classList.add('wrong'));
+    document.querySelectorAll('.option').forEach(el => {
+      if (correctAnswers.includes(el.textContent.trim())) {
+        el.classList.add('correct');
+      }
+    });
+    document.getElementById('feedback').textContent =
+      'Wrong ✗ — Correct: ' + correctAnswers.join(', ');
+    document.getElementById('feedback').style.color = 'var(--red)';
+  }
+
+  document.getElementById('score').textContent = `Score: ${score} / ${currentIndex + 1}`;
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('nextBtn').style.display = 'inline-block';
+  updateProgressVisual();
+});
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+  currentIndex++;
+  pickQuestion();
+});
+
+function updateProgressVisual() {
+  const bar = document.getElementById('visualBar');
+  const ratio = currentIndex === 0 ? 0 : score / (currentIndex + 1);
+  bar.style.background =
+    `linear-gradient(90deg, rgba(16,185,129,1) ${ratio * 100}%, rgba(209,213,219,1) ${ratio * 100}%)`;
+  document.getElementById('progressText').textContent =
+    currentIndex === 0
+      ? 'Not answered yet'
+      : `Answered ${currentIndex + 1} / ${shuffledQuiz.length} — Accuracy ${(ratio * 100).toFixed(0)}%`;
+}
+
+pickQuestion();
+</script>
+</body>
+</html>
